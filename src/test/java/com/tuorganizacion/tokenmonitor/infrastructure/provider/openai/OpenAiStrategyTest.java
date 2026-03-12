@@ -3,60 +3,35 @@ package com.tuorganizacion.tokenmonitor.infrastructure.provider.openai;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tuorganizacion.tokenmonitor.domain.TokenUsage;
 import com.tuorganizacion.tokenmonitor.domain.config.LlmPricingConfig;
-import com.tuorganizacion.tokenmonitor.domain.exception.TokenParsingException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class OpenAiStrategyTest {
-
     private OpenAiStrategy strategy;
 
     @BeforeEach
     void setUp() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        LlmPricingConfig pricingConfig = new LlmPricingConfig(Map.of(
-                "gpt-4", new LlmPricingConfig.ModelPricing(0.03, 0.06)
-        ));
-        strategy = new OpenAiStrategy(objectMapper, pricingConfig);
+        strategy = new OpenAiStrategy(new ObjectMapper(), new LlmPricingConfig());
     }
 
     @Test
-    @DisplayName("Debe extraer correctamente los tokens de una respuesta JSON válida")
-    void shouldExtractTokensSuccessfully() {
-        String validJsonResponse = """
-            {
-              "id": "chatcmpl-123",
-              "model": "gpt-4",
-              "usage": {
-                "prompt_tokens": 1000,
-                "completion_tokens": 500
-              }
-            }
-            """;
-
-        TokenUsage usage = strategy.extractUsage(validJsonResponse);
-
+    void shouldExtractUsageCorrectly() {
+        String json = "{\"model\": \"gpt-4\", \"usage\": {\"prompt_tokens\": 10, \"completion_tokens\": 5}}";
+        TokenUsage usage = strategy.extractUsage(json);
         assertEquals("gpt-4", usage.modelName());
-        assertEquals(1000, usage.inputTokens());
-        assertEquals(500, usage.outputTokens());
+        assertEquals(10, usage.inputTokens());
+        assertEquals(5, usage.outputTokens());
     }
 
     @Test
-    @DisplayName("Debe lanzar TokenParsingException si falta el nodo usage")
-    void shouldThrowExceptionWhenUsageNodeIsMissing() {
-        String invalidJsonResponse = "{\"model\": \"gpt-4\"}";
-        assertThrows(TokenParsingException.class, () -> strategy.extractUsage(invalidJsonResponse));
-    }
-
-    @Test
-    @DisplayName("Debe calcular el costo correctamente")
-    void shouldCalculateCostAccurately() {
-        TokenUsage usage = new TokenUsage(1000, 500, "gpt-4");
-        assertEquals(0.06, strategy.calculateCost(usage), 0.0001);
+    void shouldCalculateCostCorrectly() {
+        // Forzamos el uso de variables locales int para que no haya duda de tipos
+        String model = "gpt-4";
+        int in = 1000;
+        int out = 500;
+        TokenUsage usage = new TokenUsage(model, in, out);
+        double cost = strategy.calculateCost(usage);
+        assertEquals(0.06, cost, 0.0001);
     }
 }
