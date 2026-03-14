@@ -5,11 +5,11 @@ services:
     image: timescale/timescaledb:latest-pg15
     container_name: token-monitor-db
     environment:
-      POSTGRES_USER: monitor
-      POSTGRES_PASSWORD: monitor_password
-      POSTGRES_DB: token_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "5432:5432" # Considera cambiar esto a "127.0.0.1:5432" si solo accederás localmente
     volumes:
       - timescaledb-data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
