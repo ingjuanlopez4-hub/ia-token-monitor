@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "IA Token Monitor",
+  "version": "1.0",
+  "description": "Monitorea silenciosamente el consumo y costo de tokens en ChatGPT.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "token-monitor@juancarlos.dev"
+    }
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "http://localhost:8080/*"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
