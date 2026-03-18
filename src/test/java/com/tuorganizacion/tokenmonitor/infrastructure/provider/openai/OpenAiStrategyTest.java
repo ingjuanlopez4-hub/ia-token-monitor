@@ -1,37 +1,42 @@
 package com.tuorganizacion.tokenmonitor.infrastructure.provider.openai;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tuorganizacion.tokenmonitor.domain.TokenUsage;
-import com.tuorganizacion.tokenmonitor.domain.config.LlmPricingConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OpenAiStrategyTest {
+
     private OpenAiStrategy strategy;
 
     @BeforeEach
     void setUp() {
-        strategy = new OpenAiStrategy(new ObjectMapper(), new LlmPricingConfig());
+        // Nuestro nuevo diseño es limpio, no requiere mocks ni configuraciones complejas
+        strategy = new OpenAiStrategy();
     }
 
     @Test
-    void shouldExtractUsageCorrectly() {
-        String json = "{\"model\": \"gpt-4\", \"usage\": {\"prompt_tokens\": 10, \"completion_tokens\": 5}}";
-        TokenUsage usage = strategy.extractUsage(json);
-        assertEquals("gpt-4", usage.modelName());
-        assertEquals(10, usage.inputTokens());
-        assertEquals(5, usage.outputTokens());
+    void shouldReturnCorrectProviderId() {
+        assertEquals("openai", strategy.getProviderId(), "El ID del proveedor debe ser 'openai'");
     }
 
     @Test
     void shouldCalculateCostCorrectly() {
-        // Forzamos el uso de variables locales int para que no haya duda de tipos
-        String model = "gpt-4";
-        int in = 1000;
-        int out = 500;
-        TokenUsage usage = new TokenUsage(model, in, out);
-        double cost = strategy.calculateCost(usage);
-        assertEquals(0.06, cost, 0.0001);
+        // GIVEN
+        int inputTokens = 1500;
+        int outputTokens = 500;
+        String model = "gpt-4o"; // Actualmente el precio está hardcodeado, pero el modelo se pasa por contrato
+
+        // WHEN
+        BigDecimal calculatedCost = strategy.calculate(model, inputTokens, outputTokens);
+
+        // THEN
+        // Fórmula: (1500 * 0.000005) + (500 * 0.000015)
+        // In = 0.0075 | Out = 0.0075 | Total = 0.0150
+        BigDecimal expectedCost = new BigDecimal("0.0150"); 
+        
+        // Usamos compareTo para ignorar problemas de escala (ej. 0.0150 vs 0.015000)
+        assertEquals(0, expectedCost.compareTo(calculatedCost), "El costo matemático calculado es incorrecto");
     }
 }
