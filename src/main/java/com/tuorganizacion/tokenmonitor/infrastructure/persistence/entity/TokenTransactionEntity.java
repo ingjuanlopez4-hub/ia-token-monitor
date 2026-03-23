@@ -1,5 +1,4 @@
 package com.tuorganizacion.tokenmonitor.infrastructure.persistence.entity;
-
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
