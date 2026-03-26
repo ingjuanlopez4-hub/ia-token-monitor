@@ -20,8 +20,8 @@ public class TokenUsagePayload {
     public String getModel() { return model; }
     public int getTokensInput() { return tokensInput; }
     public int getTokensOutput() { return tokensOutput; }
-    public String providerId() { return providerId; }
-    public String rawJsonResponse() { return rawJsonResponse; }
+    public String getProviderId() { return providerId; }
+    public String getRawJsonResponse() { return rawJsonResponse; }
 
     // Setters
     public void setModel(String model) { this.model = model; }
